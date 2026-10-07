@@ -9,6 +9,12 @@ public class RulesTest {
   for(int api=28;api<=36;api++)check(Rules.recommend(api,false,true)[2].equals("DiPlay-0.2.12.apk"),"official "+api);
   for(int api=14;api<=36;api++){check(Rules.recommend(api,true,true)[2].isEmpty(),"hold conflict "+api);check(Rules.recommend(api,false,false)[2].isEmpty(),"hold ABI "+api);}
   check(!Rules.matches("9.1",27),"spoofed label");check(Rules.matches("8.1.0",27),"patch release");check(Rules.matches("9",28),"correct label");
+  check(!Rules.matches("9.1",28),"nonexistent Android 9.1 must be flagged even with API 28");
+  check(Rules.matches("9.0.0",28),"zero suffix Android 9");
+  check(!Rules.matches("10.1",29),"nonexistent minor release");
+  check(Rules.matches("12.1",32),"Android 12L label");
+  check(Rules.matches("12L",32),"Android 12L name");
+  check(!Rules.matches(null,27),"missing release label");
   check(Rules.version(14).equals("4.0"),"minimum mapping");check(Rules.version(27).equals("8.1"),"8.1 mapping");
   check(Rules.inferredVersion(27,false).equals("Android 8.1"),"inferred from API rather than label");
   check(Rules.inferredVersion(28,true).equals("无法确定"),"conflict must not claim real version");
