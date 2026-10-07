@@ -1,0 +1,2 @@
+15d8aa8f5c5b9348422910f509255628364b07bdf6815b9006c6a99afbf9ce1b  headunit-inspector-1.1.0.apk
+ebdca87226098693b3f4570b7e5b06e2c5cb2861f62d90248b0f893079bb4d3a  headunit-inspector-1.1.0-source.zip
