@@ -2,15 +2,15 @@
 
 一个离线运行的 Android APK：先比较车机的**标称版本**与**检测推定版本**，再推荐符合系统门槛的 DiPlay 安装包，并跳转至对应的 GitHub 发布页。
 
-> 当前版本：**1.1.0 预览版**。已通过构建、签名和规则检查；尚未完成 Android 模拟器或实体车机运行验证。
+> 当前版本：**1.2.0 安装使用版**。APK 使用本机实时数据，已在 Android 9 / API 28 / ARM64 模拟器中完成安装、覆盖升级及 22 项原生功能检查；尚未在实体车机运行。
 
 ## 下载与安装
 
-- [下载 APK：headunit-inspector-1.1.0.apk](https://github.com/493330227-wq/headunit-version-inspector/raw/refs/heads/main/dist/headunit-inspector-1.1.0.apk)
-- [版本发布页](https://github.com/493330227-wq/headunit-version-inspector/releases/tag/v1.1.0)
+- [下载 APK：headunit-inspector-1.2.0.apk](https://github.com/493330227-wq/headunit-version-inspector/releases/download/v1.2.0/headunit-inspector-1.2.0.apk)
+- [版本发布页](https://github.com/493330227-wq/headunit-version-inspector/releases/tag/v1.2.0)
 - [使用说明](docs/usage.txt)
 
-将 APK 放入 U 盘，在车机文件管理器中打开并安装。打开应用即自动扫描，无需 Root 或 ADB。若已安装 1.0.0，可尝试直接覆盖安装；两个版本使用相同包名和签名。
+将 APK 放入 U 盘，在车机文件管理器中打开并安装。打开应用即自动扫描，无需 Root 或 ADB。与 1.0.0、1.1.0 使用相同包名和签名；已验证从 1.1.0 直接覆盖升级。
 
 最低安装门槛为 **Android 4.0 / API 14**；应用没有原生库，不申请网络、存储、定位或蓝牙权限。GitHub 下载页面由外部浏览器打开，需要浏览器能够联网。
 
@@ -24,6 +24,20 @@
 ![版本推荐演示](docs/demo-recommendation.png)
 
 以上截图和 [交互演示](docs/demo.html) 使用模拟数据，不代表任何具体车机的实测结果。下载仓库后双击 `docs/demo.html`，可以体验 7 个场景及页面切换。
+
+## APK 实际运行
+
+以下为安装后的原生 APK 在 Android 9 / ARM64 模拟器中的截图，数据由该安卓系统实时提供。它们不是网页演示，也不是用户车机的检测结果。
+
+![原生 APK 检测结果](docs/native-result.png)
+
+![原生 APK 下载推荐](docs/native-recommendation.png)
+
+验证包括安装、1.1.0 覆盖升级、本机 API/版本/型号读取、接口一致性、推荐页、下载链接 Intent、剪贴板、重新检测以及 JSON 报告导出。测试拦截外部浏览器和分享选择器；没有自动下载第三方 APK。
+
+最低声明 API 为 14；本次原生运行验证覆盖 API 28，不等于所有旧车机都已验证。检测发现证据冲突时仍会显示“无法确定”。正式分发不改变这些检测边界。
+
+开发者可按 `tests/android/build_test.py` 的说明构建并运行原生测试；测试 APK 不随产品安装包分发。
 
 ## 推荐规则
 
@@ -59,7 +73,7 @@
 
 自行构建需要自己的签名。维护者发布私钥不在本仓库中；使用不同密钥签名的 APK 不能覆盖维护者签名的已安装版本。
 
-构建脚本会生成 APK、签名校验结果和演示页面，并运行 74 项规则断言。演示样例由同一个 Java `Rules` 类生成，避免另写一份推荐逻辑。
+构建脚本会生成 APK、签名校验结果和演示页面，并运行 80 项规则断言。演示样例由同一个 Java `Rules` 类生成，避免另写一份推荐逻辑。
 
 浏览器演示测试需要 Node.js、Playwright 和 Chrome：
 
@@ -67,14 +81,14 @@
 node tests/demo.test.cjs
 ```
 
-可通过 `PLAYWRIGHT_MODULE` 指定 Playwright 模块路径、`CHROME_BIN` 指定浏览器程序。已验证 7 个场景、320/600/1024 像素宽度，共 62 项交互检查。浏览器演示测试不替代原生 APK 运行测试。
+可通过 `PLAYWRIGHT_MODULE` 指定 Playwright 模块路径、`CHROME_BIN` 指定浏览器程序。1.2.0 已通过 7 个场景的 21 项页面与下载链接检查。原生 APK 另行通过 22 项运行检查（见下文）。
 
 ## 文件校验
 
 APK SHA-256：
 
 ```text
-15d8aa8f5c5b9348422910f509255628364b07bdf6815b9006c6a99afbf9ce1b
+b59d5137321c7fe944e81e591409ccb3e0b153571708922548036b5820b46331
 ```
 
 签名证书 SHA-256：
