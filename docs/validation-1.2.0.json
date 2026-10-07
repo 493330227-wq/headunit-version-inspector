@@ -1,0 +1,21 @@
+{
+  "version": "1.2.0",
+  "apk": {
+    "file": "车机版本检测-1.2.0.apk",
+    "bytes": 25046,
+    "sha256": "b59d5137321c7fe944e81e591409ccb3e0b153571708922548036b5820b46331",
+    "minSdk": 14,
+    "targetSdk": 35,
+    "version": "1.2.0",
+    "package": "cn.headunit.inspector",
+    "permissions": []
+  },
+  "ruleAssertions": 80,
+  "demoChecks": 21,
+  "nativeChecks": 22,
+  "runtime": "Android 9 / API 28 / ARM64 emulator",
+  "upgradeFrom": "1.1.0",
+  "nativeDeviceTested": false,
+  "externalIntents": "Captured in instrumentation; no third-party APK download",
+  "verificationDate": "2026-10-07"
+}
