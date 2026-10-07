@@ -127,9 +127,10 @@ public class MainActivity extends Activity {
             }
         });
     }
+ private String appVersion(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "未知";}}
  private String field(Class<?> c,String name){try{return String.valueOf(c.getField(name).get(null));}catch(Exception e){return "未提供";}}
  private JSONObject collect()throws Exception{
-  JSONObject r=new JSONObject();r.put("schemaVersion",1);r.put("appVersion","1.1.0");r.put("ruleVersion",Rules.RULE_VERSION);r.put("scannedAt",new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ",Locale.US).format(new Date()));
+  JSONObject r=new JSONObject();r.put("schemaVersion",1);r.put("appVersion",appVersion());r.put("dataSource","live_device");r.put("ruleVersion",Rules.RULE_VERSION);r.put("scannedAt",new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ",Locale.US).format(new Date()));
   JSONObject d=new JSONObject();d.put("model",Build.MODEL);d.put("manufacturer",Build.MANUFACTURER);d.put("board",Build.BOARD);d.put("hardware",field(Build.class,"HARDWARE"));d.put("buildId",Build.DISPLAY);d.put("fingerprint",Build.FINGERPRINT);d.put("screen",getResources().getDisplayMetrics().widthPixels+" × "+getResources().getDisplayMetrics().heightPixels);
   List<String> abis=new ArrayList<String>();try{String[] a=(String[])Build.class.getField("SUPPORTED_ABIS").get(null);abis.addAll(Arrays.asList(a));}catch(Exception e){abis.add(Build.CPU_ABI);if(Build.CPU_ABI2!=null&&!Build.CPU_ABI2.isEmpty())abis.add(Build.CPU_ABI2);}d.put("cpuAbis",new JSONArray(abis));r.put("device",d);
   int api=Build.VERSION.SDK_INT;String release=Build.VERSION.RELEASE;
@@ -152,7 +153,8 @@ public class MainActivity extends Activity {
 
     private void render() {
         try {
-            body.removeAllViews(); heading("车机版本检测"); navigation();
+            body.removeAllViews(); heading("车机版本检测");
+            text("v"+appVersion()+" · 本机实时检测 · 离线运行",14,MUTED); navigation();
             if(recommendationPage) showRecommendation(); else showResult();
             scroll.post(new Runnable() { public void run() { scroll.scrollTo(0,0); } });
         } catch(Exception e) { text("显示报告失败："+e.getClass().getSimpleName(),18,INK); }
@@ -182,6 +184,7 @@ public class MainActivity extends Activity {
             a.getBoolean("labelMismatch")?"两个版本不一致，请按检测推定版本选择应用。":"版本信息与已检查的接口一致。";
         text(status,18,conflict||a.getBoolean("labelMismatch")?Color.rgb(153,86,17):Color.rgb(20,110,76));
         text("推定结果不是绝对证明；部分改装固件可能修改系统信息。",14,MUTED);
+        text("本次检测："+report.getString("scannedAt"),14,MUTED);
         text("设备："+d.getString("model")+"   CPU："+d.getJSONArray("cpuAbis").toString(),15,MUTED);
         button("查看适配的 DiPlay →",true,new View.OnClickListener() {
             public void onClick(View v) { recommendationPage=true; render(); }
@@ -261,7 +264,7 @@ public class MainActivity extends Activity {
         if(report!=null)state.putString("report",report.toString());
         state.putBoolean("recommendationPage",recommendationPage);
     }
- private String plain()throws Exception{JSONObject d=report.getJSONObject("device"),v=report.getJSONObject("reportedVersion"),a=report.getJSONObject("assessment"),n=report.getJSONObject("recommendation");StringBuilder s=new StringBuilder("车机版本检测 1.1.0\n检测时间："+report.getString("scannedAt")+"\n规则："+Rules.RULE_VERSION+"\n\n推荐："+n.getString("title")+"\n"+n.getString("reason")+"\n安装包："+n.getString("apk")+"\n来源："+n.getString("source")+"\n\n标称安卓："+v.getString("release")+"\n系统 API："+v.getInt("sdkInt")+"\n真实版本（检测推定）："+a.getString("inferredVersion")+"\nAPI 对应安卓："+a.getString("apiMappedVersion")+"\n结论："+a.getString("consistencyStatus")+"\n\n设备信息：\n"+d.toString(2)+"\n\n接口依据：\n");JSONArray ps=report.getJSONArray("probes");for(int i=0;i<ps.length();i++){JSONObject p=ps.getJSONObject(i);s.append("\n").append(p.getString("class")).append(" [API ").append(p.getInt("introducedApi")).append("] ").append(p.getString("result"));}s.append("\n\n").append(a.getString("limitations"));return s.toString();}
+ private String plain()throws Exception{JSONObject d=report.getJSONObject("device"),v=report.getJSONObject("reportedVersion"),a=report.getJSONObject("assessment"),n=report.getJSONObject("recommendation");StringBuilder s=new StringBuilder("车机版本检测 "+appVersion()+"\n数据来源：本机实时读取\n检测时间："+report.getString("scannedAt")+"\n规则："+Rules.RULE_VERSION+"\n\n推荐："+n.getString("title")+"\n"+n.getString("reason")+"\n安装包："+n.getString("apk")+"\n来源："+n.getString("source")+"\n\n标称安卓："+v.getString("release")+"\n系统 API："+v.getInt("sdkInt")+"\n真实版本（检测推定）："+a.getString("inferredVersion")+"\nAPI 对应安卓："+a.getString("apiMappedVersion")+"\n结论："+a.getString("consistencyStatus")+"\n\n设备信息：\n"+d.toString(2)+"\n\n接口依据：\n");JSONArray ps=report.getJSONArray("probes");for(int i=0;i<ps.length();i++){JSONObject p=ps.getJSONObject(i);s.append("\n").append(p.getString("class")).append(" [API ").append(p.getInt("introducedApi")).append("] ").append(p.getString("result"));}s.append("\n\n").append(a.getString("limitations"));return s.toString();}
  private void showDetails(){try{TextView t=new TextView(this);t.setText(plain());t.setTextSize(17);t.setPadding(dp(16),dp(12),dp(16),dp(12));t.setTextIsSelectable(true);ScrollView sc=new ScrollView(this);sc.addView(t);new AlertDialog.Builder(this).setTitle("检测依据").setView(sc).setPositiveButton("关闭",null).show();}catch(Exception e){Toast.makeText(this,"无法显示依据",0).show();}}
  private void export(boolean json){try{String name=json?"report.json":"report.txt";File f=new File(getCacheDir(),name);FileOutputStream stream=new FileOutputStream(f);try{stream.write((json?report.toString(2):plain()).getBytes("UTF-8"));}finally{stream.close();}Uri uri=Uri.parse("content://cn.headunit.inspector.reports/"+name);Intent send=new Intent(Intent.ACTION_SEND);send.setType(json?"application/json":"text/plain");send.putExtra(Intent.EXTRA_STREAM,uri);send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);if(Build.VERSION.SDK_INT>=16)send.setClipData(ClipData.newRawUri("检测报告",uri));startActivity(Intent.createChooser(send,"导出车机检测报告"));}catch(Exception e){Toast.makeText(this,"未找到可用分享应用。可在检测依据中长按复制报告。",Toast.LENGTH_LONG).show();}}
 
