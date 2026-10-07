@@ -1,0 +1,15 @@
+build/
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+*.idsig
+.env
+.env.*
+.DS_Store
+__pycache__/
+验证日志*.txt
+构建校验.json
+演示验证.json
+演示-*.png

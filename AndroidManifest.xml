@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.headunit.inspector" android:versionCode="2" android:versionName="1.1.0">
+ <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="35"/>
+ <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+ <application android:label="车机版本检测" android:icon="@drawable/icon" android:theme="@android:style/Theme.Holo.Light.NoActionBar" android:allowBackup="false" android:supportsRtl="true">
+  <activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
+  <provider android:name=".ReportProvider" android:authorities="cn.headunit.inspector.reports" android:exported="false" android:grantUriPermissions="true"/>
+ </application>
+</manifest>
