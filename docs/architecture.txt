@@ -1,0 +1,57 @@
+车机版本检测：实现架构与维护
+
+1. 目标
+在用户打开 APK 后自动读取系统数据，检查“安卓版本标签”和系统接口是否一致，最后给出明确的 DiPlay 包名称、门槛和来源。每个结论都保留依据，不把未知当成检测成功。
+
+2. 实现模块
+MainActivity：原生 Activity，后台单线程收集；两个独立页面先展示版本，再展示推荐与 GitHub 跳转。旋转时保存报告和所在页面；返回键从推荐页回到结果页。
+Rules：纯 Java 版本映射与推荐决策，可独立运行单元测试。
+ReportProvider：只读缓存报告提供器，只向用户主动选择的分享目标临时授权。
+catalog.json：经检查的 DiPlay 包资料及 SHA-256；目前运行规则在 Rules.java，更新目录时同步更新规则和测试。
+build.py：无 Gradle 的可复现构建流程，工具链和签名密钥从环境变量指定。
+
+3. 证据与判定
+读取 Build.VERSION.RELEASE、SDK_INT、机型、厂商、主板、硬件标识、固件指纹、安全补丁、ABI、屏幕。
+反射检查 JobScheduler/API21、NotificationChannel/API26、SharedMemory/API27、MacAddress/API28、RoleManager/API29、SdkExtensions/API30。
+API28 以上额外调用 MacAddress.fromString，验证一个不访问网络、不改变系统状态的公开方法。
+当系统声明已经支持某接口却找不到或无法加载/调用，标记证据冲突并暂停推荐。
+高版本接口在低 API 固件中出现可能是回移，不直接升高系统版本。
+标称版本与 SDK 映射不一致时警告，仍根据 SDK 和接口门槛筛选包；不能把 SDK 当绝对真实版本。
+ABI 必须匹配目录包；DiPlay 四种 ABI 已通过实际安装包检查。
+
+4. 推荐结果
+先检查证据冲突、架构，再按 API 筛选已核验目录。
+结果包括推荐包、理由、版本来源、目录日期和实测边界。
+已有实际运行成功的包应优先保留；工具不自动替换、下载或安装 DiPlay。
+本版本针对不受 Root 权限支持的普通用户环境，不读取隐藏 API，不刷机。
+
+5. 安全与隐私
+Manifest 无 uses-permission；零第三方 SDK、零网络请求。
+ContentProvider 未导出，仅读 report.txt/report.json，拒绝写入和其他文件访问。
+报告含设备型号、固件指纹等，分享由用户主动执行。
+签名采用 RSA2048；同时提供 v1 签名以便老 Android 安装。
+发布私钥由维护者单独保管，不包含在仓库或源码压缩包中；以后同包名更新必须使用原密钥。
+
+6. 构建
+要求 JDK17、Android平台35的android.jar、build-tools35（aapt2,d8,zipalign,apksigner）。
+设置 JAVA_HOME、ANDROID_JAR、ANDROID_BUILD_TOOLS、SIGNING_KEYSTORE、SIGNING_PASSWORD 环境变量。
+签名 keystore 中 alias 必须为 headunit。
+执行 python3 build.py。
+源码按 Java8 编译，D8最低API14，Manifest最低14、target35。
+构建脚本会校验签名、对齐和 ZIP，并执行 RulesTest；输出 APK 和构建校验.json。
+
+7. 验证与后续实机验收
+自动规则测试覆盖18/19、25/26、27/28边界、冲突、未知架构、版本标签不一致。
+实际车机验收：安装→启动自动扫描→推荐结果→依据可读→报告导出→重扫→退出重开。
+要确认最低安卓兼容，还需 Android4.0/8.1/9等实体机或模拟器启动测试。本次未做运行测试。
+需要进一步提高“真实版本”置信度时，应增加可解释的多接口行为探测及已知固件样本；任何报告版本的方法都无法对任意修改的固件提供绝对证明。
+后续可增加本地 APK 检查：用系统包解析读取 minSdk、原生库 ABI，校验 SHA-256与签名，再匹配当前车机；版本目录更新应保留发布日期、证据与已验证状态。
+
+8. 1.1.0 更新
+versionCode=2，沿用原签名，最低 API14 不变。
+结果页：标称版本、真实版本（检测推定），冲突或未知 API 显示无法确定。
+推荐页：基于 SDK/API、接口证据和 ABI 匹配，给出中文推荐、准确包名及 GitHub 发布页链接。
+外部下载页属于作者维护页面，无法保证其语言；应用内用中文解释 Assets。
+增加无浏览器时的复制链接操作。
+浏览器演示：demo-template.html + tests/DemoFixtures.java；由 build.py 自动用 Java Rules 生成 7 个场景，避免重复实现推荐规则。
+原生 APK 运行验证仍未完成；浏览器演示通过交互及横竖屏宽度检查。
