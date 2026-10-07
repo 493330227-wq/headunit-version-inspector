@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.headunit.inspector.tests">
+ <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="28"/>
+ <application android:label="Inspector native tests"/>
+ <instrumentation android:name=".SmokeTest" android:targetPackage="cn.headunit.inspector"/>
+</manifest>
