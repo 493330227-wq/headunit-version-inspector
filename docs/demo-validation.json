@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "checks": 63,
+  "scenarios": 11,
+  "widths": [
+    320,
+    600,
+    1024
+  ],
+  "method": "CUA browser UI; copy success notice checked; clipboard content verified in native APK test"
+}
