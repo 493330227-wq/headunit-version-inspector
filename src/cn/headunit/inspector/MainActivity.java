@@ -148,7 +148,8 @@ public class MainActivity extends Activity {
   if(api>=28){JSONObject p=new JSONObject();p.put("class","android.net.MacAddress.fromString");p.put("introducedApi",28);try{Class<?> c=Class.forName("android.net.MacAddress");Object o=c.getMethod("fromString",String.class).invoke(null,"02:00:00:00:00:01");p.put("result",o!=null?"call_success":"unavailable");if(o==null)conflict=true;}catch(Exception e){p.put("result","call_failed");p.put("errorType",e.getClass().getSimpleName());conflict=true;}catch(LinkageError e){p.put("result","call_failed");p.put("errorType",e.getClass().getSimpleName());conflict=true;}probes.put(p);}
   r.put("probes",probes);boolean supported=false;for(String abi:abis)if(Arrays.asList("armeabi-v7a","arm64-v8a","x86","x86_64").contains(abi))supported=true;
   JSONObject a=new JSONObject();a.put("apiMappedVersion",Rules.version(api));a.put("inferredVersion",Rules.inferredVersion(api,conflict));a.put("interfaceConflict",conflict);a.put("labelMismatch",!Rules.matches(release,api));a.put("consistencyStatus",conflict?"接口证据存在冲突":(!Rules.matches(release,api)?"标称版本与 API 对应版本不一致":"未发现明显矛盾"));a.put("limitations","API 等级同样由固件报告；接口可能被回移或裁剪。本工具不能保证识破所有被修改的固件，也不能保证 CarPlay 硬件兼容。");r.put("assessment",a);
-  String[] rec=Rules.recommend(api,conflict,supported);JSONObject n=new JSONObject();n.put("title",rec[0]);n.put("reason",rec[1]);n.put("apk",rec[2]);n.put("source",rec[3]);n.put("verification","满足已检查的系统门槛，不代表当前设备已实测可用");r.put("recommendation",n);return r;
+  String[] rec=Rules.recommend(api,conflict,supported);JSONObject n=new JSONObject();n.put("title",rec[0]);n.put("reason",rec[1]);n.put("apk",rec[2]);n.put("source",rec[3]);n.put("verification","满足已检查的系统门槛，不代表当前设备已实测可用");r.put("recommendation",n);r.put("catalogDate",Rules.CATALOG_DATE);
+  String[] alt=Rules.alternative(api,conflict,supported);JSONObject fallback=new JSONObject();fallback.put("title",alt[0]);fallback.put("reason",alt[1]);fallback.put("apk",alt[2]);fallback.put("source",alt[3]);r.put("alternative",fallback);return r;
  }
 
     private void render() {
@@ -227,33 +228,38 @@ public class MainActivity extends Activity {
                 public void onClick(View v) { showDetails(); }
             });
         }
+        final JSONObject alt=report.optJSONObject("alternative");
+        if(alt!=null && !alt.optString("source").isEmpty()) {
+            LinearLayout fallback=panel(Color.rgb(222,236,250));
+            textIn(fallback,"旧版备选 · 已能使用建议保留",16,MUTED);
+            textIn(fallback,alt.getString("title"),22,BLUE).setTypeface(null,Typeface.BOLD);
+            textIn(fallback,alt.getString("reason"),17,INK);
+            textIn(fallback,"下载文件："+alt.getString("apk"),16,MUTED);
+            body.addView(fallback);
+            button("打开旧版下载页 ↗",false,new View.OnClickListener(){public void onClick(View v){openDownload(alt.optString("source"));}});
+            button("复制旧版下载页链接",false,new View.OnClickListener(){public void onClick(View v){copyDownload(alt.optString("source"));}});
+        }
         button("← 返回检测结果",false,new View.OnClickListener() {
             public void onClick(View v) { recommendationPage=false; render(); }
         });
         text("已能正常使用的 DiPlay 建议保留。满足系统门槛，仍需验证实际连接。",15,MUTED);
-        text("安装包目录：2026-10-05 · 固定版本推荐，不代表最新版本",14,MUTED);
+        text("安装包目录："+Rules.CATALOG_DATE+" · 随应用更新，不自动查询最新版本",14,MUTED);
     }
-    private void openDownload() {
-        try {
-            String url=report.getJSONObject("recommendation").getString("source");
-            if(!url.startsWith("https://github.com/"))return;
-            startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));
-        } catch(Exception e) {
-            new AlertDialog.Builder(this).setTitle("无法打开浏览器")
-                .setMessage("可复制下载页链接，在手机或电脑浏览器中打开。")
-                .setPositiveButton("复制链接",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d,int which) { copyDownload(); }
-                }).setNegativeButton("关闭",null).show();
-        }
+    private void openDownload() { openDownload(report.optJSONObject("recommendation").optString("source")); }
+    private void openDownload(final String url) {
+        if(!url.startsWith("https://github.com/"))return;
+        try { startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url))); }
+        catch(Exception e) { new AlertDialog.Builder(this).setTitle("无法打开浏览器")
+            .setMessage("可复制下载页链接，在手机或电脑浏览器中打开。")
+            .setPositiveButton("复制链接",new DialogInterface.OnClickListener(){public void onClick(DialogInterface d,int which){copyDownload(url);}})
+            .setNegativeButton("关闭",null).show(); }
     }
-    private void copyDownload() {
-        try {
-            String url=report.getJSONObject("recommendation").getString("source");
-            if(url.isEmpty())return;
-            ((ClipboardManager)getSystemService(CLIPBOARD_SERVICE))
-                .setPrimaryClip(ClipData.newPlainText("DiPlay 下载页",url));
-            Toast.makeText(this,"下载页链接已复制",Toast.LENGTH_SHORT).show();
-        } catch(Exception e) { Toast.makeText(this,"复制失败，请查看检测报告中的链接",Toast.LENGTH_LONG).show(); }
+    private void copyDownload() { copyDownload(report.optJSONObject("recommendation").optString("source")); }
+    private void copyDownload(String url) {
+        if(!url.startsWith("https://github.com/"))return;
+        try { ((ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("DiPlay 下载页",url));
+            Toast.makeText(this,"下载页链接已复制",Toast.LENGTH_SHORT).show(); }
+        catch(Exception e){Toast.makeText(this,"复制失败，请查看检测报告中的链接",Toast.LENGTH_LONG).show();}
     }
     @Override public void onBackPressed() {
         if(recommendationPage && report!=null) { recommendationPage=false; render(); }
@@ -264,7 +270,7 @@ public class MainActivity extends Activity {
         if(report!=null)state.putString("report",report.toString());
         state.putBoolean("recommendationPage",recommendationPage);
     }
- private String plain()throws Exception{JSONObject d=report.getJSONObject("device"),v=report.getJSONObject("reportedVersion"),a=report.getJSONObject("assessment"),n=report.getJSONObject("recommendation");StringBuilder s=new StringBuilder("车机版本检测 "+appVersion()+"\n数据来源：本机实时读取\n检测时间："+report.getString("scannedAt")+"\n规则："+Rules.RULE_VERSION+"\n\n推荐："+n.getString("title")+"\n"+n.getString("reason")+"\n安装包："+n.getString("apk")+"\n来源："+n.getString("source")+"\n\n标称安卓："+v.getString("release")+"\n系统 API："+v.getInt("sdkInt")+"\n真实版本（检测推定）："+a.getString("inferredVersion")+"\nAPI 对应安卓："+a.getString("apiMappedVersion")+"\n结论："+a.getString("consistencyStatus")+"\n\n设备信息：\n"+d.toString(2)+"\n\n接口依据：\n");JSONArray ps=report.getJSONArray("probes");for(int i=0;i<ps.length();i++){JSONObject p=ps.getJSONObject(i);s.append("\n").append(p.getString("class")).append(" [API ").append(p.getInt("introducedApi")).append("] ").append(p.getString("result"));}s.append("\n\n").append(a.getString("limitations"));return s.toString();}
+ private String plain()throws Exception{JSONObject d=report.getJSONObject("device"),v=report.getJSONObject("reportedVersion"),a=report.getJSONObject("assessment"),n=report.getJSONObject("recommendation");StringBuilder s=new StringBuilder("车机版本检测 "+appVersion()+"\n数据来源：本机实时读取\n检测时间："+report.getString("scannedAt")+"\n规则："+Rules.RULE_VERSION+"\n\n推荐："+n.getString("title")+"\n"+n.getString("reason")+"\n安装包："+n.getString("apk")+"\n来源："+n.getString("source")+"\n\n标称安卓："+v.getString("release")+"\n系统 API："+v.getInt("sdkInt")+"\n真实版本（检测推定）："+a.getString("inferredVersion")+"\nAPI 对应安卓："+a.getString("apiMappedVersion")+"\n结论："+a.getString("consistencyStatus")+"\n\n设备信息：\n"+d.toString(2)+"\n\n接口依据：\n");JSONArray ps=report.getJSONArray("probes");for(int i=0;i<ps.length();i++){JSONObject p=ps.getJSONObject(i);s.append("\n").append(p.getString("class")).append(" [API ").append(p.getInt("introducedApi")).append("] ").append(p.getString("result"));}JSONObject alt=report.optJSONObject("alternative");if(alt!=null&&!alt.optString("source").isEmpty())s.append("\n\n旧版备选：").append(alt.optString("title")).append("\n").append(alt.optString("reason")).append("\n安装包：").append(alt.optString("apk")).append("\n来源：").append(alt.optString("source"));s.append("\n\n").append(a.getString("limitations"));return s.toString();}
  private void showDetails(){try{TextView t=new TextView(this);t.setText(plain());t.setTextSize(17);t.setPadding(dp(16),dp(12),dp(16),dp(12));t.setTextIsSelectable(true);ScrollView sc=new ScrollView(this);sc.addView(t);new AlertDialog.Builder(this).setTitle("检测依据").setView(sc).setPositiveButton("关闭",null).show();}catch(Exception e){Toast.makeText(this,"无法显示依据",0).show();}}
  private void export(boolean json){try{String name=json?"report.json":"report.txt";File f=new File(getCacheDir(),name);FileOutputStream stream=new FileOutputStream(f);try{stream.write((json?report.toString(2):plain()).getBytes("UTF-8"));}finally{stream.close();}Uri uri=Uri.parse("content://cn.headunit.inspector.reports/"+name);Intent send=new Intent(Intent.ACTION_SEND);send.setType(json?"application/json":"text/plain");send.putExtra(Intent.EXTRA_STREAM,uri);send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);if(Build.VERSION.SDK_INT>=16)send.setClipData(ClipData.newRawUri("检测报告",uri));startActivity(Intent.createChooser(send,"导出车机检测报告"));}catch(Exception e){Toast.makeText(this,"未找到可用分享应用。可在检测依据中长按复制报告。",Toast.LENGTH_LONG).show();}}
 
