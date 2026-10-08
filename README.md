@@ -1,100 +1,66 @@
 # 车机版本检测
 
-一个离线运行的 Android APK：先比较车机的**标称版本**与**检测推定版本**，再推荐符合系统门槛的 DiPlay 安装包，并跳转至对应的 GitHub 发布页。
+离线 Android APK：显示车机标称版本与结合 API、公开接口所得的检测推定版本，再提供中文 DiPlay 推荐与 GitHub 下载页跳转。
 
-> 当前版本：**1.2.0 安装使用版**。APK 使用本机实时数据，已在 Android 9 / API 28 / ARM64 模拟器中完成安装、覆盖升级及 22 项原生功能检查；尚未在实体车机运行。
+当前版本 **1.3.0 安装使用版**。本次更新纳入官方 DiPlay 0.2.15 的 Android 7.1 / API 25 最低门槛，并保留旧版备选。
 
 ## 下载与安装
 
-- [下载 APK：headunit-inspector-1.2.0.apk](https://github.com/493330227-wq/headunit-version-inspector/releases/download/v1.2.0/headunit-inspector-1.2.0.apk)
-- [版本发布页](https://github.com/493330227-wq/headunit-version-inspector/releases/tag/v1.2.0)
+- [下载 APK](https://github.com/493330227-wq/headunit-version-inspector/releases/download/v1.3.0/headunit-inspector-1.3.0.apk)
+- [发布页及源码](https://github.com/493330227-wq/headunit-version-inspector/releases/tag/v1.3.0)
 - [使用说明](docs/usage.txt)
 
-将 APK 放入 U 盘，在车机文件管理器中打开并安装。打开应用即自动扫描，无需 Root 或 ADB。与 1.0.0、1.1.0 使用相同包名和签名；已验证从 1.1.0 直接覆盖升级。
+将 APK 复制到 U 盘，在车机文件管理器中安装。无需 Root 或 ADB，打开即读取本机数据。与历史版本同包名同签名，已验证从 1.2.0 覆盖升级。
 
-最低安装门槛为 **Android 4.0 / API 14**；应用没有原生库，不申请网络、存储、定位或蓝牙权限。GitHub 下载页面由外部浏览器打开，需要浏览器能够联网。
+检测软件最低 Android 4.0 / API 14，零应用权限。外部浏览器打开 GitHub 时需要联网。
 
-## 两个页面
+## 界面
 
-1. **检测结果**：显示标称版本、真实版本（检测推定）、系统 API、架构和检测依据。
-2. **DiPlay 推荐**：显示中文说明、推荐安装包名称，以及“前往 GitHub 下载页”按钮；也可以复制链接到手机或电脑打开。
+检测结果先显示标称版本和真实版本（检测推定），推荐页显示匹配依据、新版本和旧版备选。接口证据冲突、未知 API 或架构不匹配时不提供下载链接。
 
-![检测结果演示](docs/demo-result.png)
+![原生检测结果](docs/native-result.png)
 
-![版本推荐演示](docs/demo-recommendation.png)
+![原生推荐页面](docs/native-recommendation.png)
 
-以上截图和 [交互演示](docs/demo.html) 使用模拟数据，不代表任何具体车机的实测结果。下载仓库后双击 `docs/demo.html`，可以体验 7 个场景及页面切换。
+![原生旧版备选](docs/native-alternative.png)
 
-## APK 实际运行
+以上为 Android 9 / API 28 / ARM64 模拟器上实际安装 APK 后的截图，数据由该安卓系统实时提供，不是用户车机检测结果。
 
-以下为安装后的原生 APK 在 Android 9 / ARM64 模拟器中的截图，数据由该安卓系统实时提供。它们不是网页演示，也不是用户车机的检测结果。
-
-![原生 APK 检测结果](docs/native-result.png)
-
-![原生 APK 下载推荐](docs/native-recommendation.png)
-
-验证包括安装、1.1.0 覆盖升级、本机 API/版本/型号读取、接口一致性、推荐页、下载链接 Intent、剪贴板、重新检测以及 JSON 报告导出。测试拦截外部浏览器和分享选择器；没有自动下载第三方 APK。
-
-最低声明 API 为 14；本次原生运行验证覆盖 API 28，不等于所有旧车机都已验证。检测发现证据冲突时仍会显示“无法确定”。正式分发不改变这些检测边界。
-
-开发者可按 `tests/android/build_test.py` 的说明构建并运行原生测试；测试 APK 不随产品安装包分发。
+[交互演示](docs/demo.html) 可离线双击打开，含 11 个模拟场景；不会检测电脑或车机。演示与 APK 推荐使用同一 Java Rules 类。
 
 ## 推荐规则
 
-| 检测条件 | 推荐 |
-| --- | --- |
-| API 28 及以上且已收录、接口检查与架构匹配 | 官方 DiPlay 0.2.12 公开预览版 |
-| API 26–27 | KrunkZhou Android 8 兼容版 v0.2.6 |
-| API 19–25 | Legacy Android v0.2.7 社区试用版 |
-| API 18 及以下 | 没有已核验的适配包 |
-| 接口证据冲突、API 未收录或架构未匹配 | 暂停推荐，显示原因 |
+| 检测条件（接口与架构符合） | 主推荐 | 旧版备选 |
+| --- | --- | --- |
+| API 28–37，Android 9 及以上 | 官方 0.2.15 公开预览版 | 官方 0.2.12 旧版预览包 |
+| API 26–27，Android 8.0–8.1 | 官方 0.2.15 公开预览版 | KrunkZhou Android 8 v0.2.6 |
+| API 25，Android 7.1 | 官方 0.2.15 公开预览版 | Legacy v0.2.7 |
+| API 19–24，Android 4.4–7.0 | Legacy v0.2.7 | 无 |
+| API 18 以下、接口冲突、未知 API、架构不匹配 | 无已核验推荐 | 无 |
 
-安装包目录核验日期为 **2026-10-05**，属于固定版本目录，不代表 GitHub 当前最新版本。包来源、最低 API、架构和 SHA-256 记录在 [catalog.json](catalog.json)。
+目录核验日期 **2026-10-09**，随应用发版更新，不自动联网查询。[catalog.json](catalog.json) 记录发布页、实际最低 API、CPU 架构、SHA-256 及验证范围。
 
-“真实版本（检测推定）”是结合固件报告的 API 与公开接口所得的推定。固件可以修改系统信息，接口也可能被回移或裁剪，因此不能保证识别所有伪装。满足系统门槛也不代表 CarPlay 认证、连接、触控或音频一定正常。已经正常使用的 DiPlay 建议保留。
+官方 0.2.15 仍为作者定义的公开预览版。Android 7.1–8.1 支持尚未完成车机验证；官方主要面向比亚迪，其他品牌及后装车机不保证兼容。符合安装门槛不等于 CarPlay 连接、触控或音频正常。已经正常使用的旧版建议保留。
 
-本项目不附带第三方 DiPlay 安装包，只提供原作者的发布页链接。
+固件可能修改 API 信息、回移或裁剪接口，因此“真实版本”是检测推定，不能保证识破所有伪装。本项目只提供第三方原作者发布页，不附带第三方 APK。
 
-## 隐私
+## 验证
 
-检测不发起网络请求、不修改车机设置。报告保存在应用缓存；仅在用户主动分享时，向选定应用提供临时读取权限。报告可能包含机型、固件指纹和系统信息。
+- 137 项推荐与版本规则断言，含 API 24/25/26/27/28 边界及下载阻断。
+- 63 项浏览器演示检查：11 个场景、320/600/1024 宽度、详情和复制成功提示。
+- 30 项原生 APK 检查：Android 9 / API 28 / ARM64 上安装、覆盖升级、本机数据、新旧推荐链接 Intent、剪贴板、重新检测、报告导出。
+- ZIP 完整性、对齐和 v1/v2/v3 签名检查。
 
-## 构建
+原生测试拦截外部浏览器与分享 Intent；未测试实体车机或其他 API 的实际运行。新旧 APK 链接不代表车机连接验证。
 
-需要 Python 3、JDK 17、Android 平台 35 的 `android.jar`、Android Build Tools 35（`aapt2`、`d8`、`zipalign`、`apksigner`）。不依赖 Gradle或第三方 Android 库。
+## 隐私与构建
 
-设置以下环境变量后运行 `python3 build.py`：
+检测离线运行，不修改车机设置。报告保存在缓存，仅在用户主动导出时授予选定分享应用临时读取权限。报告可能包含固件指纹和机型。
 
-- `JAVA_HOME`：JDK 目录；将其 `bin` 加入 `PATH`。
-- `ANDROID_JAR`：平台 35 的 `android.jar` 完整路径。
-- `ANDROID_BUILD_TOOLS`：Build Tools 35 的目录。
-- `SIGNING_KEYSTORE`：你自己的签名 keystore，alias 必须为 `headunit`。
-- `SIGNING_PASSWORD`：keystore 密码，仅放入本地环境，不提交到仓库。
+需要 Python 3、JDK 17、Android 平台 35 与 Build Tools 35。设置 JAVA_HOME（bin 加入 PATH）、ANDROID_JAR、ANDROID_BUILD_TOOLS、SIGNING_KEYSTORE、SIGNING_PASSWORD 后运行 `python3 build.py`。签名 alias 为 headunit；发布私钥不在仓库，自签名包不能覆盖维护者签名包。
 
-自行构建需要自己的签名。维护者发布私钥不在本仓库中；使用不同密钥签名的 APK 不能覆盖维护者签名的已安装版本。
+构建自动运行 RulesTest、生成 APK、演示与校验记录。浏览器测试源码见 tests/demo.test.cjs，原生测试见 tests/android/build_test.py。
 
-构建脚本会生成 APK、签名校验结果和演示页面，并运行 80 项规则断言。演示样例由同一个 Java `Rules` 类生成，避免另写一份推荐逻辑。
+APK SHA-256：`6c0b9935fdb0c366c61ec174cad9e38cc54d9ccb0dfb2dee6d1b555821ed4bc9`
 
-浏览器演示测试需要 Node.js、Playwright 和 Chrome：
-
-```sh
-node tests/demo.test.cjs
-```
-
-可通过 `PLAYWRIGHT_MODULE` 指定 Playwright 模块路径、`CHROME_BIN` 指定浏览器程序。1.2.0 已通过 7 个场景的 21 项页面与下载链接检查。原生 APK 另行通过 22 项运行检查（见下文）。
-
-## 文件校验
-
-APK SHA-256：
-
-```text
-b59d5137321c7fe944e81e591409ccb3e0b153571708922548036b5820b46331
-```
-
-签名证书 SHA-256：
-
-```text
-b52c4a944aa2745283cd3c3d70091a98c59eb417f79b9dca815b73683e355042
-```
-
-详细说明见 [架构与维护](docs/architecture.txt)。
+证书 SHA-256：`b52c4a944aa2745283cd3c3d70091a98c59eb417f79b9dca815b73683e355042`

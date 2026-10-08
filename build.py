@@ -31,7 +31,7 @@ run(java/'javac','-encoding','UTF-8','-source','8','-target','8','-d',build/'cla
 run(java/'java','-cp',build/'classes','cn.headunit.inspector.RulesTest')
 run(java/'javac','-encoding','UTF-8','-cp',build/'classes','-d',build/'classes',root/'tests/DemoFixtures.java')
 fixtures=subprocess.check_output([str(java/'java'),'-cp',str(build/'classes'),'cn.headunit.inspector.DemoFixtures'],text=True)
-assert len(json.loads(fixtures)) == 7
+assert len(json.loads(fixtures)) == 11
 (root/'demo-fixtures.json').write_text(fixtures)
 (root/'演示页面.html').write_text((root/'demo-template.html').read_text().replace('__FIXTURES__',fixtures))
 with zipfile.ZipFile(apk) as z:assert z.testzip() is None

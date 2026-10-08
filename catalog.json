@@ -1,23 +1,50 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-05",
+  "verifiedAt": "2026-10-09",
   "updatePolicy": "随应用发版更新。检测离线运行，不查询最新版本。",
   "packages": [
     {
       "id": "official",
+      "version": "0.2.15",
+      "minSdk": 25,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "filename": "DiPlay-0.2.15.apk",
+      "sha256": "4bf45f16d6b1ab0a61462b831014081f07240f5596c90ca6bf38fb43f9890511",
+      "source": "https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.15",
+      "prerelease": true,
+      "verification": "已读取 APK 实际 minSdk=25。Android 7.1–8.1 支持尚未车机验证；官方主要面向比亚迪，后装车机不保证兼容。"
+    },
+    {
+      "id": "official-previous",
       "version": "0.2.12",
       "minSdk": 28,
-      "abis": ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"],
+      "abis": [
+        "armeabi-v7a",
+        "arm64-v8a",
+        "x86",
+        "x86_64"
+      ],
       "filename": "DiPlay-0.2.12.apk",
       "sha256": "840f2d62fc2c7d10250555b99444da7e0539be3834f635c6aa22ecbd635f7cf4",
       "source": "https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.12",
-      "verification": "安装包门槛检查，未在本车运行验证"
+      "verification": "安装包门槛检查，未在本车运行验证",
+      "verifiedAt": "2026-10-08"
     },
     {
       "id": "krunk",
       "version": "0.2.6",
       "minSdk": 26,
-      "abis": ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"],
+      "abis": [
+        "armeabi-v7a",
+        "arm64-v8a",
+        "x86",
+        "x86_64"
+      ],
       "filename": "DiPlay-Android8-complete-debug.apk",
       "sha256": "2d19e5bb14548f8373be4b2e359cac018eef216f3d7e180c396754d1e1eca026",
       "source": "https://github.com/KrunkZhou/DiPlay-Android8.0/releases/tag/v0.2.6",
@@ -27,7 +54,12 @@
       "id": "legacy",
       "version": "0.2.7",
       "minSdk": 19,
-      "abis": ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"],
+      "abis": [
+        "armeabi-v7a",
+        "arm64-v8a",
+        "x86",
+        "x86_64"
+      ],
       "filename": "DiPlay-Legacy-Android-v0.2.7.apk",
       "sha256": "391a68216498cdc221745aa8bb2ee06aecb48680bfd982d37bbeb390d8050927",
       "source": "https://github.com/programmerguohuajing/DiPlay-Legacy-Android/releases/tag/v0.2.7",
