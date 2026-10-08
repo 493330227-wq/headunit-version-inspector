@@ -17,6 +17,8 @@ const fs=require('fs');const path=require('path');const assert=require('assert')
   await ok(await p.locator('#recommend-title').innerText()===f.title,'recommendation '+i);
   if(f.source){await ok(await p.locator('#download').getAttribute('href')===f.source,'source '+i)}
   else {await ok(!await p.locator('#download').isVisible(),'hold source '+i);await ok(await p.locator('#download').getAttribute('href')===null,'no stale source '+i);}
+  await ok(await p.locator('#alternative-card').isVisible()===!!f.alternative.source,'fallback visibility '+i);
+  await ok(await p.locator('#alternative-download').getAttribute('href')===(f.alternative.source||null),'fallback link '+i);
   await p.click('#back');await ok(await p.locator('#result-page').isVisible(),'back '+i);
  }
  await p.selectOption('#scenario','0');await p.click('#details');await ok(await p.locator('#evidence').isVisible(),'details dialog');await p.click('#close-evidence');
@@ -33,6 +35,6 @@ const fs=require('fs');const path=require('path');const assert=require('assert')
  const pop=ctx.waitForEvent('page');await p.click('#download');const target=await pop;await target.waitForLoadState();
  await ok(target.url()===fixtures[0].source,'download opens expected page');await target.close();
  await ok(errors.length===0,'no JavaScript errors');
- await browser.close();const result={status:'PASS',checks,scenarios:7,widths:[320,600,1024],notes:'Browser demo only. GitHub click tested with intercepted navigation; actual release URLs separately verified.'};
+ await browser.close();const result={status:'PASS',checks,scenarios:fixtures.length,widths:[320,600,1024],notes:'Browser demo only. GitHub click tested with intercepted navigation; actual release URLs separately verified.'};
  fs.writeFileSync(root+'/演示验证.json',JSON.stringify(result,null,2));console.log(result);
 })().catch(e=>{console.error(e);process.exit(1)});
